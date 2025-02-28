@@ -8,6 +8,7 @@ class DatabaseHelper {
   static const _columnId = 'id';
   static const _columnToken = 'token';
 
+  // Singleton instance
   static final DatabaseHelper _instance = DatabaseHelper._internal();
   factory DatabaseHelper() => _instance;
   DatabaseHelper._internal();

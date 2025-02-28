@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/network_client.dart';
 import '../../providers/auth_providers.dart';
 
 class LoginScreen extends ConsumerWidget {
@@ -7,7 +8,6 @@ class LoginScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isLoading = ref.watch(loginProvider);
     final emailController = TextEditingController();
     final passwordController = TextEditingController();
 
@@ -62,32 +62,58 @@ class LoginScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 30),
-              if (isLoading)
-                const Center(child: CircularProgressIndicator())
-              else
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      ref.read(loginProvider.notifier).state = true;
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    try {
+                      final token = await NetworkClient().login(
+                        email: emailController.text,
+                        password: passwordController.text,
+                        onError: (error) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(error),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        },
+                      );
 
-                      Future.delayed(const Duration(seconds: 2), () {
-                        ref.read(loginProvider.notifier).state = false;
-                      });
-                    },
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      backgroundColor: Colors.blueAccent,
+                      await ref
+                          .read(authStateProvider.notifier)
+                          .login(token); // Update auth state
+                      if (context.mounted) {
+                        Navigator.pushReplacementNamed(context, '/home');
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("Login failed: ${e.toString()}"),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    } finally {
+                      if (context.mounted) {}
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Text(
-                      'Login',
-                      style: TextStyle(fontSize: 18, color: Colors.white),
-                    ),
+                    backgroundColor: Colors.blueAccent,
+                  ),
+                  child: const Text(
+                    'Login',
+                    style: TextStyle(fontSize: 18, color: Colors.white),
                   ),
                 ),
+              ),
               const SizedBox(height: 20),
               Center(
                 child: GestureDetector(
