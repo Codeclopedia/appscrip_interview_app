@@ -66,25 +66,14 @@ class LoginScreen extends ConsumerWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () async {
-                    try {
-                      final token = await NetworkClient().login(
-                        email: emailController.text,
-                        password: passwordController.text,
-                        onError: (error) {
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(error),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                          }
-                        },
-                      );
+                    // ref.read(authStateProvider.notifier).state =
+                    //     state.copyWith(isLoading: true);
 
-                      await ref
-                          .read(authStateProvider.notifier)
-                          .login(token); // Update auth state
+                    try {
+                      await ref.read(authStateProvider.notifier).login(
+                            emailController.text,
+                            passwordController.text,
+                          );
                       if (context.mounted) {
                         Navigator.pushReplacementNamed(context, '/home');
                       }
@@ -98,7 +87,10 @@ class LoginScreen extends ConsumerWidget {
                         );
                       }
                     } finally {
-                      if (context.mounted) {}
+                      if (context.mounted) {
+                        // ref.read(authStateProvider.notifier).state =
+                        //     state.copyWith(isLoading: false);
+                      }
                     }
                   },
                   style: ElevatedButton.styleFrom(

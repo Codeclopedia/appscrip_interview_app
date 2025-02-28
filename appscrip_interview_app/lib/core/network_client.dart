@@ -38,7 +38,7 @@ class NetworkClient {
     }
   }
 
-  Future<String> register({
+  Future<Registermodel> register({
     required String email,
     required String password,
     required Function(String error) onError, // Callback for handling errors
@@ -50,13 +50,14 @@ class NetworkClient {
         "password": password,
       });
 
-      final loginData = Registermodel.fromRawJson(response.body);
+      final registerData = Registermodel.fromRawJson(response.body);
 
       if (response.statusCode == 200) {
-        return loginData.token!;
+        return registerData;
       } else {
-        onError(loginData.error ?? "Login failed"); // Call the error callback
-        throw Exception(loginData.error ?? "Login failed");
+        onError(
+            registerData.error ?? "Login failed"); // Call the error callback
+        throw Exception(registerData.error ?? "Login failed");
       }
     } catch (e) {
       onError("An error occurred: ${e.toString()}"); // Call the error callback
